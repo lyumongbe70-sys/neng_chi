@@ -17,9 +17,9 @@ export default function Logo({
   href = "/",
 }: LogoProps) {
   const iconDimensions = {
-    sm: { width: 32, height: 34, boxSize: "w-8 h-8" },
-    md: { width: 42, height: 44, boxSize: "w-11 h-11" },
-    lg: { width: 56, height: 58, boxSize: "w-14 h-14" },
+    sm: { width: 38, height: 26, boxSize: "w-9 h-7" },
+    md: { width: 48, height: 33, boxSize: "w-12 h-9" },
+    lg: { width: 64, height: 44, boxSize: "w-16 h-11" },
   }[size];
 
   const content = (
