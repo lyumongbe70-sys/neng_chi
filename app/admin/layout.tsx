@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "@/components/Logo";
 import {
   LayoutDashboard,
   Package,
@@ -20,18 +21,8 @@ export default function AdminLayout({
       {/* 관리자 사이드바 */}
       <aside className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col justify-between p-5 shrink-0 hidden md:flex">
         <div className="space-y-6">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-emerald-600/30">
-              健
-            </div>
-            <div>
-              <span className="font-black text-white text-base tracking-tight block">
-                VitalCare CMS
-              </span>
-              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">
-                ADMIN CONSOLE
-              </span>
-            </div>
+          <div className="px-2">
+            <Logo variant="dark" href="/admin" />
           </div>
 
           <nav className="space-y-1 text-xs font-semibold text-slate-400">

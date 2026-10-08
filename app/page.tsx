@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Header from "@/components/Header";
+import Logo from "@/components/Logo";
 import CartDrawer from "@/components/CartDrawer";
 import MobileTabBar from "@/components/MobileTabBar";
 import MainSliderBanner from "@/components/MainSliderBanner";
@@ -206,12 +207,7 @@ export default function Home() {
       <footer className="bg-slate-950 text-slate-400 text-xs py-12 border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center gap-2.5 text-white font-black text-lg">
-              <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black">
-                健
-              </div>
-              <span>건강함 MALL (VitalCare)</span>
-            </div>
+            <Logo variant="dark" />
             <div className="flex flex-wrap gap-5 text-xs text-slate-400 font-medium">
               <a href="/about/intro" className="hover:text-emerald-400">쇼핑몰 소개</a>
               <a href="/about/greeting" className="hover:text-emerald-400">CEO 인사말</a>

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/lib/stores/useCartStore";
 import { useWishlistStore } from "@/lib/stores/useWishlistStore";
+import Logo from "@/components/Logo";
 
 interface HeaderProps {
   searchQuery?: string;
@@ -142,28 +143,8 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
             <Menu className="w-6 h-6" />
           </button>
 
-          {/* 브랜드 로고 ("건강함" 십자 잎사귀 심볼) */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-600 group-hover:bg-emerald-700 transition-all flex items-center justify-center text-white shadow-md shadow-emerald-600/25">
-              {/* 건강함 십자 잎사귀 마크 */}
-              <div className="relative flex items-center justify-center">
-                <span className="text-lg font-black tracking-tighter">健</span>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-1">
-                <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
-                  건강<span className="text-emerald-600">함</span>
-                </span>
-                <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded-sm bg-emerald-100 text-emerald-800">
-                  MALL
-                </span>
-              </div>
-              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 block -mt-1 tracking-wider">
-                GNMART 바이탈케어
-              </span>
-            </div>
-          </Link>
+          {/* 브랜드 로고 (Pinterest Nature 레퍼런스 엠블럼) */}
+          <Logo />
 
           {/* 쿠팡형 중앙 와이드 검색창 */}
           <div
@@ -480,12 +461,7 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
           <div className="fixed inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold">
-                    健
-                  </div>
-                  <span className="font-bold text-slate-900 text-lg">건강함 MALL</span>
-                </div>
+                <Logo size="sm" />
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="p-1 text-slate-400 hover:text-slate-700"

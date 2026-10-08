@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import Logo from "@/components/Logo";
 import { createClient } from "@/lib/supabase/client";
 import { Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
 
@@ -53,10 +54,8 @@ export default function LoginPage() {
 
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 max-w-md w-full shadow-sm space-y-6">
-          <div className="text-center space-y-2">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white font-black text-xl flex items-center justify-center mx-auto shadow-md">
-              健
-            </div>
+          <div className="flex flex-col items-center justify-center space-y-3">
+            <Logo size="lg" />
             <h1 className="text-2xl font-black text-slate-900">로그인</h1>
             <p className="text-xs text-slate-400">
               건강함 MALL에 오신 것을 환영합니다.
