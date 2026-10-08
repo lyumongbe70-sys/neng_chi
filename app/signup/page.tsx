@@ -56,54 +56,64 @@ export default function SignupPage() {
 
     setIsLoading(true);
 
-    // 실제 로컬 회원 DB 저장 (수업/실습 환경에서 Supabase 이메일 인증 발송 제한 에러 없이 100% 즉시 가입 보장)
     try {
-      const storedUsersRaw = localStorage.getItem("vitalcare_registered_users");
-      const storedUsers: any[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
+      const supabase = createClient();
+      const emailForAuth = trimmedUsername.includes("@")
+        ? trimmedUsername
+        : `${trimmedUsername}@vitalcare.mall`;
 
-      // 아이디 중복 체크
-      if (storedUsers.some((u) => u.username === trimmedUsername)) {
-        setErrorMessage("이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.");
+      // 2. Supabase Authentication (auth.users)에 직접 회원가입 전송
+      const { data, error } = await supabase.auth.signUp({
+        email: emailForAuth,
+        password: password,
+        options: {
+          data: {
+            username: trimmedUsername,
+            display_name: trimmedUsername,
+            name: trimmedUsername,
+            points: 1000,
+          },
+        },
+      });
+
+      if (error) {
+        if (
+          error.message.includes("already registered") ||
+          error.message.includes("User already registered")
+        ) {
+          setErrorMessage("이미 Supabase Authentication에 등록된 아이디(이메일)입니다. 다른 아이디를 입력해 주세요.");
+        } else if (error.message.includes("rate limit")) {
+          setErrorMessage("Supabase 이메일 요청 한도가 초과되었습니다. 잠시 후 다시 시도해 주세요.");
+        } else {
+          setErrorMessage(`Supabase 가입 오류: ${error.message}`);
+        }
         setIsLoading(false);
         return;
       }
 
-      // 새 회원 객체 생성
-      const newUser = {
-        id: `user-${Date.now()}`,
-        username: trimmedUsername,
-        password: password, // 실습용
-        points: 1000,
-        createdAt: new Date().toISOString(),
-      };
-
-      storedUsers.push(newUser);
-      localStorage.setItem("vitalcare_registered_users", JSON.stringify(storedUsers));
-
-      // Supabase 클라우드에도 백그라운드로 동기화 시도 (이메일 제한 에러 발생 시에도 가입은 성공 유지)
+      // 3. 로컬 저장소에도 동시 캐싱하여 오프라인/빠른 로그인 지원
       try {
-        const supabase = createClient();
-        const emailForAuth = trimmedUsername.includes("@")
-          ? trimmedUsername
-          : `${trimmedUsername}@vitalcare.mall`;
-        await supabase.auth.signUp({
+        const storedUsersRaw = localStorage.getItem("vitalcare_registered_users");
+        const storedUsers: any[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
+        storedUsers.push({
+          id: data.user?.id || `user-${Date.now()}`,
+          username: trimmedUsername,
           email: emailForAuth,
           password: password,
-          options: {
-            data: { username: trimmedUsername, points: 1000 },
-          },
+          points: 1000,
+          createdAt: new Date().toISOString(),
         });
-      } catch (cloudErr) {
-        // Supabase rate limit은 조용히 통과시킴
-        console.warn("Supabase background sync:", cloudErr);
+        localStorage.setItem("vitalcare_registered_users", JSON.stringify(storedUsers));
+      } catch (cacheErr) {
+        console.warn("Local caching error:", cacheErr);
       }
 
-      setSuccessMessage("회원가입이 성공적으로 완료되었습니다! 가입 축하 1,000P가 지급되었습니다.");
+      setSuccessMessage("Supabase Authentication에 정상 등록되었습니다! 1,000P 지급 완료");
 
-      // 1.2초 후 로그인 페이지로 자동 이동
+      // 1.5초 후 로그인 페이지로 자동 이동
       setTimeout(() => {
         router.push("/login");
-      }, 1200);
+      }, 1500);
     } catch (err: any) {
       setErrorMessage(err?.message || "회원가입 처리 중 오류가 발생했습니다.");
     } finally {
@@ -131,7 +141,7 @@ export default function SignupPage() {
 
           {/* 에러 메시지 알림 박스 */}
           {errorMessage && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2">
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2 animate-shake">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
@@ -161,7 +171,7 @@ export default function SignupPage() {
                   autoFocus
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="아이디를 입력하세요 (예: user123)"
+                  placeholder="아이디를 입력하세요 (예: myid123)"
                   className="w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-slate-800 transition-all font-medium text-xs sm:text-sm"
                 />
               </div>
@@ -231,7 +241,7 @@ export default function SignupPage() {
               disabled={isLoading}
               className="w-full py-3.5 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer disabled:opacity-50"
             >
-              <span>{isLoading ? "가입 정보 저장 중..." : "회원가입 완료"}</span>
+              <span>{isLoading ? "Supabase에 계정 등록 중..." : "회원가입 완료"}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
