@@ -80,6 +80,7 @@ export const PRODUCTS: Product[] = [
     ],
     isBest: true,
     stock: 250,
+    imageUrl: "/product-dr-lean.png",
   },
   {
     id: "pure-rtg-omega3",
@@ -113,6 +114,7 @@ export const PRODUCTS: Product[] = [
     ],
     isBest: true,
     stock: 180,
+    imageUrl: "/product-brainy.png",
   },
   {
     id: "milk-thistle-silymarin",
@@ -178,6 +180,7 @@ export const PRODUCTS: Product[] = [
     ],
     isNew: true,
     stock: 140,
+    imageUrl: "/product-doctor-ps.png",
   },
   {
     id: "plant-msm-joint-care",

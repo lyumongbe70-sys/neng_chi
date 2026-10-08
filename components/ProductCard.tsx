@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Product } from "@/types/product";
 import { useCartStore } from "@/lib/stores/useCartStore";
 import { Star, ShoppingBag, CheckCircle2, Pill, ShieldCheck } from "lucide-react";
@@ -48,12 +49,25 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {/* 제품 시각적 심볼 아이콘 박스 */}
-        <div className="w-full h-36 rounded-xl bg-gradient-to-br from-emerald-50/50 via-slate-50 to-emerald-100/30 flex flex-col items-center justify-center p-4 mb-4 border border-slate-100 group-hover:scale-[1.02] transition-transform">
-          <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-600 mb-2">
-            <Pill className="w-7 h-7" />
-          </div>
-          <span className="text-[11px] font-semibold text-slate-500">{product.volume}</span>
+        {/* 제품 시각적 이미지 또는 심볼 아이콘 박스 */}
+        <div className="w-full h-44 rounded-xl bg-slate-50 relative overflow-hidden flex flex-col items-center justify-center p-2 mb-4 border border-slate-100 group-hover:scale-[1.02] transition-transform">
+          {product.imageUrl ? (
+            <div className="relative w-full h-full">
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                className="object-contain p-1"
+              />
+            </div>
+          ) : (
+            <>
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-600 mb-2">
+                <Pill className="w-7 h-7" />
+              </div>
+              <span className="text-[11px] font-semibold text-slate-500">{product.volume}</span>
+            </>
+          )}
         </div>
 
         {/* 평점 및 리뷰 수 */}
