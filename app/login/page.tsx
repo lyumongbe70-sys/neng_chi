@@ -6,107 +6,125 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
 import { createClient } from "@/lib/supabase/client";
-import { Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
+import { Lock, User, ArrowRight, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
     setIsLoading(true);
 
+    const trimmedUsername = username.trim().toLowerCase();
+    const emailForAuth = trimmedUsername.includes("@")
+      ? trimmedUsername
+      : `${trimmedUsername}@vitalcare.mall`;
+
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailForAuth,
+        password: password,
+      });
 
-      if (
-        supabaseUrl &&
-        anonKey &&
-        anonKey !== "YOUR_SUPABASE_ANON_KEY" &&
-        supabaseUrl.startsWith("http")
-      ) {
-        const supabase = createClient();
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) {
-          alert(`로그인 실패: ${error.message}`);
-          setIsLoading(false);
-          return;
-        }
+      if (error) {
+        setErrorMessage("아이디 또는 비밀번호가 일치하지 않습니다.");
+        setIsLoading(false);
+        return;
       }
-    } catch (e) {
-      console.warn("Supabase auth bypassed in demo:", e);
-    }
 
-    // 데모 로그인 처리
-    router.push("/");
+      // 로그인 성공 시 메인 페이지로 이동
+      router.push("/");
+    } catch (err: any) {
+      setErrorMessage(err?.message || "로그인 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-emerald-100 selection:text-emerald-900">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 max-w-md w-full shadow-sm space-y-6">
-          <div className="flex flex-col items-center justify-center space-y-3">
-            <Logo size="lg" />
-            <h1 className="text-2xl font-black text-slate-900">로그인</h1>
-            <p className="text-xs text-slate-400">
+      <main className="flex-1 flex items-center justify-center p-4 py-8 sm:py-12">
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 sm:p-10 max-w-md w-full shadow-lg shadow-slate-200/50 space-y-6">
+          <div className="text-center space-y-2">
+            <div className="flex justify-center mb-1">
+              <Logo size="md" />
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">로그인</h1>
+            <p className="text-xs text-slate-500 font-medium">
               건강함 MALL에 오신 것을 환영합니다.
             </p>
           </div>
 
+          {errorMessage && (
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           <form onSubmit={handleLogin} className="space-y-4 text-xs">
             <div>
-              <label className="font-bold text-slate-700 block mb-1">이메일</label>
+              <label className="font-bold text-slate-700 block mb-1.5">아이디</label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
-                  type="email"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
+                  autoFocus
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="아이디를 입력하세요"
+                  className="w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-slate-800 transition-all font-medium text-xs sm:text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="font-bold text-slate-700 block mb-1">비밀번호</label>
+              <label className="font-bold text-slate-700 block mb-1.5">비밀번호</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
+                  placeholder="비밀번호를 입력하세요"
+                  className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-slate-800 transition-all font-medium text-xs sm:text-sm"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all"
+              className="w-full py-3.5 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer disabled:opacity-50"
             >
               <span>{isLoading ? "로그인 중..." : "로그인"}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="pt-2 text-center text-xs text-slate-500 flex justify-center gap-2">
+          <div className="pt-2 text-center text-xs text-slate-500 flex justify-center items-center gap-2 border-t border-slate-100">
             <span>아직 회원이 아니신가요?</span>
-            <Link href="/signup" className="text-emerald-700 font-bold hover:underline">
-              회원가입 (1,000P 받기)
+            <Link href="/signup" className="text-emerald-700 font-black hover:underline">
+              회원가입하기
             </Link>
           </div>
         </div>

@@ -4,148 +4,234 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import Logo from "@/components/Logo";
 import { createClient } from "@/lib/supabase/client";
-import { Lock, Mail, User, Phone, ArrowRight, Gift } from "lucide-react";
+import { Lock, User, CheckCircle2, ArrowRight, ShieldCheck, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  
+  // 전통적인 아이디 & 비밀번호 폼 필드
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(true);
+  
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    // 1. 유효성 검사
+    const trimmedUsername = username.trim().toLowerCase();
+    if (!trimmedUsername) {
+      setErrorMessage("아이디를 입력해 주세요.");
+      return;
+    }
+
+    if (trimmedUsername.length < 4) {
+      setErrorMessage("아이디는 4자 이상 영문 또는 숫자 조합이어야 합니다.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage("비밀번호는 최소 6자 이상이어야 합니다.");
+      return;
+    }
+
+    if (password !== passwordConfirm) {
+      setErrorMessage("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+      return;
+    }
+
+    if (!agreeTerms) {
+      setErrorMessage("이용약관 및 개인정보 처리방침에 동의해 주세요.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      // 아이디 형식(@ 포함 여부)에 따라 이메일 주소 포맷 구성
+      const emailForAuth = trimmedUsername.includes("@")
+        ? trimmedUsername
+        : `${trimmedUsername}@vitalcare.mall`;
 
-      if (
-        supabaseUrl &&
-        anonKey &&
-        anonKey !== "YOUR_SUPABASE_ANON_KEY" &&
-        supabaseUrl.startsWith("http")
-      ) {
-        const supabase = createClient();
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              name,
-              phone,
-            },
+      const supabase = createClient();
+
+      const { data, error } = await supabase.auth.signUp({
+        email: emailForAuth,
+        password: password,
+        options: {
+          data: {
+            username: trimmedUsername,
+            display_name: trimmedUsername,
+            points: 1000,
           },
-        });
+        },
+      });
 
-        if (error) {
-          alert(`회원가입 실패: ${error.message}`);
-          setIsLoading(false);
-          return;
+      if (error) {
+        // 이미 가입된 아이디 예외 처리
+        if (
+          error.message.includes("already registered") ||
+          error.message.includes("User already registered")
+        ) {
+          setErrorMessage("이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.");
+        } else {
+          setErrorMessage(`회원가입 실패: ${error.message}`);
         }
+        setIsLoading(false);
+        return;
       }
-    } catch (e) {
-      console.warn("Supabase auth bypassed in demo:", e);
-    }
 
-    alert("회원가입이 완료되었습니다! 신규 가입 웰컴 적립금 1,000P가 지급되었습니다.");
-    router.push("/");
+      setSuccessMessage("회원가입이 성공적으로 완료되었습니다! 가입 축하 1,000P가 지급되었습니다.");
+      
+      // 1.5초 후 로그인 페이지로 자동 이동
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+    } catch (err: any) {
+      setErrorMessage(err?.message || "회원가입 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-emerald-100 selection:text-emerald-900">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 max-w-md w-full shadow-sm space-y-6">
+      <main className="flex-1 flex items-center justify-center p-4 py-8 sm:py-12">
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 sm:p-10 max-w-md w-full shadow-lg shadow-slate-200/50 space-y-6">
+          
+          {/* 상단 로고 및 헤더 */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-black mb-1">
-              <Gift className="w-3.5 h-3.5 text-amber-600" />
-              가입 즉시 1,000P 적립
+            <div className="flex justify-center mb-1">
+              <Logo size="md" />
             </div>
-            <h1 className="text-2xl font-black text-slate-900">간편 회원가입</h1>
-            <p className="text-xs text-slate-400">
-              안전하고 믿을 수 있는 건강기능식품 전문 멤버십
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">회원가입</h1>
+            <p className="text-xs text-slate-500 font-medium">
+              간단한 아이디와 비밀번호로 10초 만에 가입하세요!
             </p>
           </div>
 
+          {/* 에러 메시지 알림 박스 */}
+          {errorMessage && (
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2 animate-shake">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {/* 성공 메시지 알림 박스 */}
+          {successMessage && (
+            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
+          {/* 심플 가입 폼 */}
           <form onSubmit={handleSignup} className="space-y-4 text-xs">
+            {/* 1. 아이디 입력 */}
             <div>
-              <label className="font-bold text-slate-700 block mb-1">이름</label>
+              <label className="font-bold text-slate-700 block mb-1.5 flex items-center justify-between">
+                <span>아이디</span>
+                <span className="text-[11px] text-slate-400 font-normal">영문, 숫자 4자 이상</span>
+              </label>
               <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="홍길동"
-                  className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
+                  autoFocus
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="아이디를 입력하세요"
+                  className="w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-slate-800 transition-all font-medium text-xs sm:text-sm"
                 />
               </div>
             </div>
 
+            {/* 2. 비밀번호 입력 */}
             <div>
-              <label className="font-bold text-slate-700 block mb-1">휴대폰 번호</label>
+              <label className="font-bold text-slate-700 block mb-1.5 flex items-center justify-between">
+                <span>비밀번호</span>
+                <span className="text-[11px] text-slate-400 font-normal">최소 6자 이상</span>
+              </label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="010-1234-5678"
-                  className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="font-bold text-slate-700 block mb-1">이메일 계정</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="font-bold text-slate-700 block mb-1">비밀번호</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="6자 이상 입력"
-                  className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
+                  placeholder="비밀번호를 입력하세요"
+                  className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-slate-800 transition-all font-medium text-xs sm:text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* 3. 비밀번호 확인 */}
+            <div>
+              <label className="font-bold text-slate-700 block mb-1.5">비밀번호 확인</label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
+                  placeholder="비밀번호를 한 번 더 입력하세요"
+                  className="w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-slate-800 transition-all font-medium text-xs sm:text-sm"
                 />
               </div>
             </div>
 
+            {/* 4. 약관 동의 체크박스 */}
+            <div className="pt-1">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={agreeTerms}
+                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  className="w-4 h-4 rounded text-emerald-600 accent-emerald-600 cursor-pointer"
+                />
+                <span className="text-slate-600 font-medium text-[11px] sm:text-xs">
+                  [필수] 이용약관 및 개인정보 수집·이용에 동의합니다.
+                </span>
+              </label>
+            </div>
+
+            {/* 5. 회원가입 제출 버튼 */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all"
+              className="w-full py-3.5 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer disabled:opacity-50"
             >
-              <span>{isLoading ? "가입 처리 중..." : "1,000P 받고 가입 완료"}</span>
+              <span>{isLoading ? "가입 정보 저장 중..." : "회원가입 완료"}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="pt-2 text-center text-xs text-slate-500 flex justify-center gap-2">
-            <span>이미 회원이신가요?</span>
-            <Link href="/login" className="text-emerald-700 font-bold hover:underline">
+          {/* 하단 로그인 링크 */}
+          <div className="pt-2 text-center text-xs text-slate-500 flex justify-center items-center gap-2 border-t border-slate-100">
+            <span>이미 아이디가 있으신가요?</span>
+            <Link href="/login" className="text-emerald-700 font-black hover:underline">
               로그인하기
             </Link>
           </div>
