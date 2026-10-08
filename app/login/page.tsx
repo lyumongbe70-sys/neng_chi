@@ -6,10 +6,12 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
 import { createClient } from "@/lib/supabase/client";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { Lock, User, ArrowRight, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuthStore();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -34,7 +36,12 @@ export default function LoginPage() {
 
       if (foundUser) {
         // 로그인 상태 저장
-        localStorage.setItem("vitalcare_logged_in_user", JSON.stringify(foundUser));
+        login({
+          id: foundUser.id,
+          username: foundUser.username,
+          email: foundUser.email || `${foundUser.username}@vitalcare.mall`,
+          points: foundUser.points || 1000,
+        });
         router.push("/");
         return;
       }
@@ -52,6 +59,12 @@ export default function LoginPage() {
         });
 
         if (!error && data.user) {
+          login({
+            id: data.user.id,
+            username: trimmedUsername,
+            email: emailForAuth,
+            points: 1000,
+          });
           router.push("/");
           return;
         }

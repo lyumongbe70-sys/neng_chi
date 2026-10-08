@@ -6,10 +6,12 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
 import { createClient } from "@/lib/supabase/client";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
 import { Lock, User, CheckCircle2, ArrowRight, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { login } = useAuthStore();
   
   // 전통적인 아이디 & 비밀번호 폼 필드
   const [username, setUsername] = useState("");
@@ -91,16 +93,22 @@ export default function SignupPage() {
         return;
       }
 
-      // 3. 로컬 저장소에도 동시 캐싱하여 오프라인/빠른 로그인 지원
+      // 3. 로컬 저장소 및 전역 세션에 즉시 자동 로그인 반영
+      const userSession = {
+        id: data.user?.id || `user-${Date.now()}`,
+        username: trimmedUsername,
+        email: emailForAuth,
+        points: 1000,
+      };
+
+      login(userSession);
+
       try {
         const storedUsersRaw = localStorage.getItem("vitalcare_registered_users");
         const storedUsers: any[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
         storedUsers.push({
-          id: data.user?.id || `user-${Date.now()}`,
-          username: trimmedUsername,
-          email: emailForAuth,
+          ...userSession,
           password: password,
-          points: 1000,
           createdAt: new Date().toISOString(),
         });
         localStorage.setItem("vitalcare_registered_users", JSON.stringify(storedUsers));
@@ -108,12 +116,12 @@ export default function SignupPage() {
         console.warn("Local caching error:", cacheErr);
       }
 
-      setSuccessMessage("Supabase Authentication에 정상 등록되었습니다! 1,000P 지급 완료");
+      setSuccessMessage("회원가입이 완료되어 자동으로 로그인되었습니다! (1,000P 지급 완료)");
 
-      // 1.5초 후 로그인 페이지로 자동 이동
+      // 1초 후 메인 홈 화면으로 이동 (헤더에 로그인 상태 즉시 반영)
       setTimeout(() => {
-        router.push("/login");
-      }, 1500);
+        router.push("/");
+      }, 1000);
     } catch (err: any) {
       setErrorMessage(err?.message || "회원가입 처리 중 오류가 발생했습니다.");
     } finally {

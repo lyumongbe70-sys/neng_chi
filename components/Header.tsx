@@ -19,9 +19,11 @@ import {
   Clock,
   Layers,
   ArrowRight,
+  LogOut,
 } from "lucide-react";
 import { useCartStore } from "@/lib/stores/useCartStore";
 import { useWishlistStore } from "@/lib/stores/useWishlistStore";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
 import Logo from "@/components/Logo";
 
 interface HeaderProps {
@@ -50,6 +52,13 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
 
   const cartCount = getTotalCount();
   const wishlistCount = getWishlistCount();
+  const { user, logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    alert("로그아웃 되었습니다.");
+    router.push("/");
+  };
 
   useEffect(() => {
     if (controlledQuery !== undefined) {
@@ -105,13 +114,36 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
           </div>
 
           <div className="flex items-center gap-3.5">
-            <Link href="/login" className="hover:text-emerald-700 transition-colors">
-              로그인
-            </Link>
-            <span className="text-slate-300">|</span>
-            <Link href="/signup" className="hover:text-emerald-700 transition-colors">
-              회원가입 (1,000P 증정)
-            </Link>
+            {user ? (
+              <>
+                <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="text-emerald-700">{user.username}</span> 님 환영합니다!
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 ml-1">
+                    {user.points ? `${user.points.toLocaleString()}P` : "1,000P"}
+                  </span>
+                </div>
+                <span className="text-slate-300">|</span>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-slate-500 hover:text-rose-600 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <LogOut className="w-3 h-3" />
+                  <span>로그아웃</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="hover:text-emerald-700 transition-colors">
+                  로그인
+                </Link>
+                <span className="text-slate-300">|</span>
+                <Link href="/signup" className="hover:text-emerald-700 transition-colors">
+                  회원가입 (1,000P 증정)
+                </Link>
+              </>
+            )}
             <span className="text-slate-300">|</span>
             <Link href="/board/notice" className="hover:text-emerald-700 transition-colors">
               고객센터
@@ -472,23 +504,57 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
 
               {/* 모바일 빠른 유저 정보 */}
               <div className="py-4 bg-emerald-50/70 -mx-6 px-6 border-b border-emerald-100 text-xs text-emerald-900">
-                <p className="font-bold">회원가입하고 1,000P 받기</p>
-                <div className="flex gap-2 mt-2">
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold"
-                  >
-                    로그인
-                  </Link>
-                  <Link
-                    href="/signup"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="px-3 py-1.5 rounded-lg bg-white border border-emerald-300 font-bold"
-                  >
-                    회원가입
-                  </Link>
-                </div>
+                {user ? (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold">
+                        <span className="text-emerald-700">{user.username}</span> 님
+                      </p>
+                      <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                        {user.points ? `${user.points.toLocaleString()}P` : "1,000P"}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <Link
+                        href="/mypage"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold"
+                      >
+                        마이페이지
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          handleLogout();
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-600 font-bold"
+                      >
+                        로그아웃
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="font-bold">회원가입하고 1,000P 받기</p>
+                    <div className="flex gap-2 mt-2">
+                      <Link
+                        href="/login"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold"
+                      >
+                        로그인
+                      </Link>
+                      <Link
+                        href="/signup"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="px-3 py-1.5 rounded-lg bg-white border border-emerald-300 font-bold"
+                      >
+                        회원가입
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 모바일 카테고리 & 페이지 메뉴 */}
