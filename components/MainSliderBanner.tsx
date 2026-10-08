@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Sparkles, ArrowRight, Brain, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 
 interface BannerSlide {
   id: number;
@@ -20,7 +20,7 @@ interface BannerSlide {
 }
 
 const SLIDES: BannerSlide[] = [
-  // 1. 첨부해주신 두뇌엔 닥터PS 맥스 신규 슬라이드
+  // 1. 첨부해주신 두뇌엔 닥터PS 맥스 슬라이드
   {
     id: 1,
     badge: "🧠 두뇌 건강 & 인지력 개선 집중 특가",
@@ -78,7 +78,7 @@ export default function MainSliderBanner() {
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  // 오른쪽에서 왼쪽으로 자동 슬라이드 (5초 주기)
+  // 5초 자동 롤링 (Fade 전환)
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
@@ -108,10 +108,8 @@ export default function MainSliderBanner() {
     if (!touchStartX.current || !touchEndX.current) return;
     const diff = touchStartX.current - touchEndX.current;
     if (diff > 50) {
-      // 스와이프 왼쪽 (다음 슬라이드)
       handleNext();
     } else if (diff < -50) {
-      // 스와이프 오른쪽 (이전 슬라이드)
       handlePrev();
     }
     touchStartX.current = null;
@@ -126,96 +124,111 @@ export default function MainSliderBanner() {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      aria-label="메인 히어로 배너 슬라이드"
+      aria-label="메인 히어로 페이드 배너"
     >
-      {/* 슬라이드 트랙: flex-row로 배치하고 translateX로 오른쪽->왼쪽 부드러운 수평 이동 */}
-      <div
-        className="flex w-full transition-transform duration-700 ease-in-out"
-        style={{ transform: `translateX(-${current * 100}%)` }}
-      >
-        {SLIDES.map((slide) => (
-          <div
-            key={slide.id}
-            className={`w-full shrink-0 min-w-full py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r ${slide.bgGradient} relative flex items-center`}
-          >
-            {/* 은은한 배경 패턴/오버레이 */}
-            <div className="absolute inset-0 bg-radial from-transparent via-black/10 to-black/40 pointer-events-none" />
+      {/* 슬라이드 겹침(Stacking) 컨테이너: 모든 슬라이드가 겹쳐져 있고, 활성 슬라이드만 opacity-100으로 부드럽게 페이드인 */}
+      <div className="relative w-full">
+        {SLIDES.map((slide, idx) => {
+          const isActive = current === idx;
+          return (
+            <div
+              key={slide.id}
+              className={`w-full py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r ${slide.bgGradient} transition-opacity duration-1000 ease-in-out ${
+                isActive
+                  ? "relative opacity-100 z-10 pointer-events-auto"
+                  : "absolute inset-0 opacity-0 z-0 pointer-events-none"
+              }`}
+            >
+              {/* 은은한 배경 오버레이 */}
+              <div className="absolute inset-0 bg-radial from-transparent via-black/10 to-black/40 pointer-events-none" />
 
-            <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-8 sm:gap-12 relative z-10">
-              {/* 왼쪽 텍스트 정보 */}
-              <div className="space-y-4 max-w-2xl text-center md:text-left flex-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-amber-300 text-xs sm:text-sm font-bold border border-white/20 shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  {slide.badge}
-                </span>
+              <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-8 sm:gap-12 relative z-10">
+                {/* 왼쪽 텍스트 정보 */}
+                <div
+                  className={`space-y-4 max-w-2xl text-center md:text-left flex-1 transition-all duration-700 delay-100 ${
+                    isActive ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-amber-300 text-xs sm:text-sm font-bold border border-white/20 shadow-sm">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {slide.badge}
+                  </span>
 
-                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
-                  {slide.title} <br />
-                  <span className={slide.accentColor}>{slide.highlight}</span>
-                </h2>
+                  <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
+                    {slide.title} <br />
+                    <span className={slide.accentColor}>{slide.highlight}</span>
+                  </h2>
 
-                <p className="text-xs sm:text-base text-slate-300 leading-relaxed font-medium line-clamp-3">
-                  {slide.desc}
-                </p>
+                  <p className="text-xs sm:text-base text-slate-300 leading-relaxed font-medium line-clamp-3">
+                    {slide.desc}
+                  </p>
 
-                <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
-                  <Link
-                    href={slide.link}
-                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs sm:text-sm shadow-xl transition-all hover:scale-105 active:scale-95"
-                  >
-                    <span>지금 혜택 보러가기</span>
-                    <ArrowRight className="w-4 h-4 text-emerald-600" />
-                  </Link>
+                  <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
+                    <Link
+                      href={slide.link}
+                      className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs sm:text-sm shadow-xl transition-all hover:scale-105 active:scale-95"
+                    >
+                      <span>지금 혜택 보러가기</span>
+                      <ArrowRight className="w-4 h-4 text-emerald-600" />
+                    </Link>
 
-                  {slide.image && (
-                    <span className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-blue-500/20 text-sky-200 border border-sky-400/30 text-xs font-bold backdrop-blur-sm">
-                      <ShieldCheck className="w-4 h-4 text-sky-400" />
-                      식약처 GMP 인증
-                    </span>
-                  )}
+                    {slide.image && (
+                      <span className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-blue-500/20 text-sky-200 border border-sky-400/30 text-xs font-bold backdrop-blur-sm">
+                        <ShieldCheck className="w-4 h-4 text-sky-400" />
+                        식약처 GMP 인증
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* 오른쪽 상품 이미지 영역 (이미지가 있는 슬라이드의 경우 실물 패키지 렌더링) */}
-              {slide.image ? (
-                <div className="relative shrink-0 flex items-center justify-center">
-                  <div className="relative w-64 sm:w-80 md:w-96 aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:scale-105 transition-transform duration-300">
-                    <Image
-                      src={slide.image}
-                      alt={slide.imageAlt || slide.title}
-                      fill
-                      priority
-                      className="object-cover object-center drop-shadow-2xl"
-                    />
-                    <div className="absolute top-3 right-3 bg-blue-600/90 text-white font-black text-[11px] px-2.5 py-1 rounded-full shadow-md backdrop-blur-xs">
-                      최고순도 80%
+                {/* 오른쪽 상품 이미지 영역 (페이드인과 함께 부드럽게 나타남) */}
+                {slide.image ? (
+                  <div
+                    className={`relative shrink-0 flex items-center justify-center transition-all duration-700 delay-150 ${
+                      isActive ? "scale-100 opacity-100" : "scale-95 opacity-0"
+                    }`}
+                  >
+                    <div className="relative w-64 sm:w-80 md:w-96 aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:scale-105 transition-transform duration-300">
+                      <Image
+                        src={slide.image}
+                        alt={slide.imageAlt || slide.title}
+                        fill
+                        priority={idx === 0}
+                        className="object-cover object-center drop-shadow-2xl"
+                      />
+                      <div className="absolute top-3 right-3 bg-blue-600/90 text-white font-black text-[11px] px-2.5 py-1 rounded-full shadow-md backdrop-blur-xs">
+                        최고순도 80%
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                /* 이미지가 없는 기존 슬라이드는 현대적인 장식 그래픽 카드 배치 */
-                <div className="hidden md:flex shrink-0 w-64 lg:w-72 aspect-square rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md p-6 flex-col justify-between shadow-2xl">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-300 font-black">
-                    <Sparkles className="w-6 h-6" />
+                ) : (
+                  <div
+                    className={`hidden md:flex shrink-0 w-64 lg:w-72 aspect-square rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md p-6 flex-col justify-between shadow-2xl transition-all duration-700 delay-150 ${
+                      isActive ? "scale-100 opacity-100" : "scale-95 opacity-0"
+                    }`}
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-300 font-black">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-slate-400 font-semibold block">VitalCare Exclusive</span>
+                      <h3 className="text-xl font-black text-white mt-1 leading-snug">
+                        건강한 일상의<br />시작, 바이탈케어
+                      </h3>
+                    </div>
+                    <div className="text-[11px] text-emerald-400 font-bold border-t border-white/10 pt-3 flex items-center justify-between">
+                      <span>100% 식약처 인증</span>
+                      <span>무료배송 혜택</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs text-slate-400 font-semibold block">VitalCare Exclusive</span>
-                    <h3 className="text-xl font-black text-white mt-1 leading-snug">
-                      건강한 일상의<br />시작, 바이탈케어
-                    </h3>
-                  </div>
-                  <div className="text-[11px] text-emerald-400 font-bold border-t border-white/10 pt-3 flex items-center justify-between">
-                    <span>100% 식약처 인증</span>
-                    <span>무료배송 혜택</span>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* 좌우 이동 네비게이션 버튼 & 인디케이터 (우측 하단) */}
+      {/* 좌우 네비게이션 버튼 & 인디케이터 (우측 하단) */}
       <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-8 z-20 flex items-center gap-3 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 shadow-xl">
         <button
           onClick={handlePrev}
