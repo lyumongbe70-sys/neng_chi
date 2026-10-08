@@ -27,12 +27,12 @@ export default function Logo({
       {/* Pinterest 레퍼런스 기반 정품 자연 잎사귀/꽃봉오리 엠블럼 */}
       <div className="relative shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
         <Image
-          src="/logo-icon.png"
+          src="/logo-symbol.png"
           alt="NATURE 건강함 로고"
           width={iconDimensions.width}
           height={iconDimensions.height}
           priority
-          className="object-contain drop-shadow-xs"
+          className="object-contain drop-shadow-xs w-auto h-auto"
         />
       </div>
 
