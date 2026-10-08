@@ -1,33 +1,72 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, ShoppingBag, Star, CheckCircle2, Pill } from "lucide-react";
+import Image from "next/image";
+import { Sparkles, ShoppingBag, Star } from "lucide-react";
 import { useCartStore } from "@/lib/stores/useCartStore";
 
-const ONE_PLUS_ONE_PRODUCTS = [
+interface SpecialProduct {
+  id: string;
+  categorySpec: string;
+  name: string;
+  originalPrice: number;
+  price: number;
+  discountRate: number;
+  rating: number;
+  imageUrl: string;
+  tags: { text: string; color: "rose" | "red" }[];
+}
+
+const SPECIAL_PRODUCTS: SpecialProduct[] = [
   {
-    id: "p-vitamin-01",
-    name: "[1+1 기획] 활력 데일리 멀티비타민 미네랄 2000 (총 4개월분)",
-    desc: "1박스 구매 시 1박스 추가 증정! 비타민 B군 8종 2000% 고함량 에너지",
-    originalPrice: 68000,
-    price: 34000,
-    discountRate: 50,
-    rating: 4.92,
-    reviewCount: 1280,
-    volume: "120정 (4개월분)",
-    dosage: "1일 1회, 1정",
+    id: "sp-vitamin-c-1000",
+    categorySpec: "비타민C | 1,000mg + 비타민D, 아연",
+    name: "프리미엄 트리플 비타민C 1000",
+    originalPrice: 48000,
+    price: 19200,
+    discountRate: 60,
+    rating: 4.9,
+    imageUrl: "/special-deal-1.png",
+    tags: [
+      { text: "신규 상품", color: "rose" },
+      { text: "공구 진행 중", color: "red" },
+    ],
   },
   {
-    id: "p-omega-01",
-    name: "[1+1 기획] 초임계 알티지(rTG) 오메가3 1000 + 저분자 피쉬콜라겐",
-    desc: "혈행·눈건강 오메가3와 탄력 충전 피쉬콜라겐 세트 더블 혜택",
-    originalPrice: 84000,
-    price: 42000,
-    discountRate: 50,
-    rating: 4.88,
-    reviewCount: 890,
-    volume: "120캡슐 (2개월분)",
-    dosage: "1일 1회, 2캡슐",
+    id: "sp-vitamin-b-complex",
+    categorySpec: "비타민 B군 | 비타민 B1 50mg 외 7종",
+    name: "메리트비 비타민B 콤플렉스",
+    originalPrice: 59000,
+    price: 11800,
+    discountRate: 80,
+    rating: 4.8,
+    imageUrl: "/special-deal-2.png",
+    tags: [{ text: "공구 진행 중", color: "red" }],
+  },
+  {
+    id: "sp-vitamin-d-2000iu",
+    categorySpec: "비타민D | 2,000IU",
+    name: "종근당건강 비타민D 2000IU 1+1",
+    originalPrice: 61937,
+    price: 19200,
+    discountRate: 69,
+    rating: 4.9,
+    imageUrl: "/special-deal-3.png",
+    tags: [{ text: "공구 진행 중", color: "red" }],
+  },
+  {
+    id: "sp-vitamin-e-complex",
+    categorySpec: "비타민E | 400IU",
+    name: "비타민E 콤플렉스",
+    originalPrice: 88500,
+    price: 17700,
+    discountRate: 80,
+    rating: 4.9,
+    imageUrl: "/special-deal-4.png",
+    tags: [
+      { text: "신규 상품", color: "rose" },
+      { text: "공구 진행 중", color: "red" },
+    ],
   },
 ];
 
@@ -39,79 +78,98 @@ export default function OnePlusOneSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black border border-emerald-200 mb-2">
-              <Sparkles className="w-4 h-4 text-emerald-600" />
-              1+1 정기 기획전
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-black border border-rose-200 mb-2">
+              <Sparkles className="w-4 h-4 text-rose-600" />
+              특별 가격 공동구매 기획전
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              하나 사면 하나 더! 더블 찬스 기획전
+              MD 엄선 특별 가격 &amp; 1+1 기획 특가전
             </h2>
           </div>
           <p className="text-xs text-slate-500">
-            가족, 연인과 함께 건강을 나누는 스마트한 1+1 패키지입니다.
+            인기 비타민 라인업 최대 80% 한정수량 특별 할인 찬스입니다.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {ONE_PLUS_ONE_PRODUCTS.map((prod) => (
+        {/* 4분할 상품 카드 그리드 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          {SPECIAL_PRODUCTS.map((prod) => (
             <div
               key={prod.id}
-              className="rounded-3xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-50/30 via-white to-slate-50 p-6 flex flex-col justify-between hover:shadow-xl transition-all relative overflow-hidden"
+              className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-rose-300 transition-all duration-300 flex flex-col justify-between group"
             >
-              {/* 1+1 엠블럼 */}
-              <div className="absolute top-4 right-4 bg-emerald-600 text-white font-black text-xs px-3 py-1 rounded-full shadow-md">
-                1 + 1 혜택
-              </div>
-
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
-                    더블 기획세트
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">{prod.volume}</span>
-                </div>
-
-                <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-600 my-3">
-                  <Pill className="w-8 h-8" />
-                </div>
-
-                <Link
-                  href={`/products/${prod.id}`}
-                  className="font-black text-lg text-slate-900 hover:text-emerald-700 transition-colors line-clamp-2 leading-snug"
-                >
-                  {prod.name}
-                </Link>
-
-                <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">
-                  {prod.desc}
-                </p>
-
-                {/* 평점 */}
-                <div className="flex items-center gap-1.5 mt-3 text-xs">
-                  <div className="flex items-center text-amber-400">
-                    <Star className="w-3.5 h-3.5 fill-current" />
+                {/* 썸네일 이미지 및 특별가격 뱃지 */}
+                <div className="relative w-full aspect-square bg-slate-50 overflow-hidden">
+                  <Image
+                    src={prod.imageUrl}
+                    alt={prod.name}
+                    fill
+                    className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {/* 좌측 상단 특별가격 톱니바퀴형 배지 */}
+                  <div className="absolute top-2 left-2 z-10">
+                    <span className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-rose-600 text-white text-[11px] font-black leading-tight text-center shadow-md shadow-rose-600/30">
+                      특별<br />가격
+                    </span>
                   </div>
-                  <span className="font-extrabold text-slate-800">{prod.rating}</span>
-                  <span className="text-slate-400">({prod.reviewCount.toLocaleString()}건)</span>
                 </div>
-              </div>
 
-              {/* 가격 및 담기 버튼 */}
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-slate-400 line-through">
+                {/* 텍스트 정보 */}
+                <div className="p-3 sm:p-4 space-y-1.5">
+                  <span className="text-[11px] text-slate-400 font-medium block truncate">
+                    {prod.categorySpec}
+                  </span>
+
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug line-clamp-2 min-h-[2.5rem]">
+                    {prod.name}
+                  </h3>
+
+                  {/* 원래 가격 */}
+                  <div className="text-[11px] text-slate-400 line-through pt-1">
                     {prod.originalPrice.toLocaleString()}원
                   </div>
+
+                  {/* 할인율 및 판매가 */}
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-xl sm:text-2xl font-black text-rose-600">
+                    <span className="text-base sm:text-lg font-black text-rose-600">
                       {prod.discountRate}%
                     </span>
-                    <span className="text-xl sm:text-2xl font-black text-slate-900">
+                    <span className="text-base sm:text-lg font-black text-slate-900">
                       {prod.price.toLocaleString()}원
                     </span>
                   </div>
-                </div>
 
+                  {/* 신규 상품 / 공구 진행 중 태그 */}
+                  <div className="flex flex-wrap items-center gap-1 pt-1.5">
+                    {prod.tags.map((t, i) => (
+                      <span
+                        key={i}
+                        className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                          t.color === "rose"
+                            ? "bg-rose-50 text-rose-600 border border-rose-200"
+                            : "bg-red-500 text-white"
+                        }`}
+                      >
+                        {t.text}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* 별점 */}
+                  <div className="flex items-center gap-1 pt-1 text-xs">
+                    <div className="flex text-amber-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-3 h-3 fill-current" />
+                      ))}
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-600">{prod.rating}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 하단 담기 버튼 */}
+              <div className="p-3 sm:p-4 pt-0">
                 <button
                   type="button"
                   onClick={() =>
@@ -121,13 +179,13 @@ export default function OnePlusOneSection() {
                       price: prod.price,
                       originalPrice: prod.originalPrice,
                       quantity: 1,
-                      dosage: prod.dosage,
+                      volume: prod.categorySpec,
                     })
                   }
-                  className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all hover:scale-105"
+                  className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-sm"
                 >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>1+1 장바구니 담기</span>
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>장바구니 담기</span>
                 </button>
               </div>
             </div>
