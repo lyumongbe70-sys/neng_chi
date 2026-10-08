@@ -22,25 +22,45 @@ export default function LoginPage() {
     setIsLoading(true);
 
     const trimmedUsername = username.trim().toLowerCase();
-    const emailForAuth = trimmedUsername.includes("@")
-      ? trimmedUsername
-      : `${trimmedUsername}@vitalcare.mall`;
 
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: emailForAuth,
-        password: password,
-      });
+      // 1. 등록된 로컬 회원 DB에서 먼저 즉시 인증 확인
+      const storedUsersRaw = localStorage.getItem("vitalcare_registered_users");
+      const storedUsers: any[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
 
-      if (error) {
-        setErrorMessage("아이디 또는 비밀번호가 일치하지 않습니다.");
-        setIsLoading(false);
+      const foundUser = storedUsers.find(
+        (u) => u.username === trimmedUsername && u.password === password
+      );
+
+      if (foundUser) {
+        // 로그인 상태 저장
+        localStorage.setItem("vitalcare_logged_in_user", JSON.stringify(foundUser));
+        router.push("/");
         return;
       }
 
-      // 로그인 성공 시 메인 페이지로 이동
-      router.push("/");
+      // 2. Supabase 클라우드 인증 시도
+      try {
+        const supabase = createClient();
+        const emailForAuth = trimmedUsername.includes("@")
+          ? trimmedUsername
+          : `${trimmedUsername}@vitalcare.mall`;
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: emailForAuth,
+          password: password,
+        });
+
+        if (!error && data.user) {
+          router.push("/");
+          return;
+        }
+      } catch (cloudErr) {
+        console.warn("Supabase auth login check:", cloudErr);
+      }
+
+      // 일치하는 계정이 없는 경우
+      setErrorMessage("아이디 또는 비밀번호가 일치하지 않습니다.");
     } catch (err: any) {
       setErrorMessage(err?.message || "로그인 처리 중 오류가 발생했습니다.");
     } finally {
@@ -103,7 +123,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
