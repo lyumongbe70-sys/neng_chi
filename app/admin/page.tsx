@@ -18,6 +18,8 @@ import {
   Trash2,
   RefreshCw,
   ExternalLink,
+  ImageIcon,
+  Upload,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -643,21 +645,87 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">이미지 경로</label>
-                <select
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white outline-none focus:border-emerald-500"
-                >
-                  <option value="/product-doctor-ps.png">위바이옴 닥터PS 2박스 세트</option>
-                  <option value="/product-dr-lean.png">닥터린 두뇌엔 PS 올인원</option>
-                  <option value="/product-brainy.png">아이브레이니 패키지</option>
-                  <option value="/special-deal-1.png">트리플 비타민C 1000</option>
-                  <option value="/special-deal-2.png">메리트비 비타민B 콤플렉스</option>
-                  <option value="/special-deal-3.png">종근당건강 비타민D 2000IU</option>
-                  <option value="/special-deal-4.png">INTERO 비타민E 콤플렉스</option>
-                </select>
+              {/* 상품 이미지 설정 (직접 파일 업로드 or 프리셋 선택 or URL 직접 입력) */}
+              <div className="space-y-2">
+                <label className="text-slate-300 font-bold block">상품 이미지 등록 / 수정</label>
+                
+                <div className="flex items-center gap-4 p-3 bg-slate-800/80 border border-slate-700 rounded-2xl">
+                  {/* 이미지 실시간 미리보기 */}
+                  <div className="w-16 h-16 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
+                    {formData.imageUrl ? (
+                      <img
+                        src={formData.imageUrl}
+                        alt="미리보기"
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <ImageIcon className="w-6 h-6 text-slate-500" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-1.5 text-xs">
+                    {/* PC에서 내 파일 사진 직접 업로드 */}
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold cursor-pointer transition-colors shadow-sm">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>내 컴퓨터에서 사진 선택</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const result = event.target?.result as string;
+                              if (result) {
+                                setFormData({ ...formData, imageUrl: result });
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+
+                    {/* 기본 갤러리 프리셋 선택 */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-slate-400 text-[11px]">또는 프리셋:</span>
+                      <select
+                        value={formData.imageUrl.startsWith("data:") ? "custom" : formData.imageUrl}
+                        onChange={(e) => {
+                          if (e.target.value !== "custom") {
+                            setFormData({ ...formData, imageUrl: e.target.value });
+                          }
+                        }}
+                        className="p-1.5 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 text-[11px] outline-none"
+                      >
+                        <option value="/product-doctor-ps.png">위바이옴 닥터PS 2박스 세트</option>
+                        <option value="/product-dr-lean.png">닥터린 두뇌엔 PS 올인원</option>
+                        <option value="/product-brainy.png">아이브레이니 패키지</option>
+                        <option value="/special-deal-1.png">트리플 비타민C 1000</option>
+                        <option value="/special-deal-2.png">메리트비 비타민B 콤플렉스</option>
+                        <option value="/special-deal-3.png">종근당건강 비타민D 2000IU</option>
+                        <option value="/special-deal-4.png">INTERO 비타민E 콤플렉스</option>
+                        <option value="/banner-brain-ps.png">두뇌엔 닥터PS 맥스 배너형</option>
+                        {formData.imageUrl.startsWith("data:") && (
+                          <option value="custom">직접 업로드한 사진 (적용됨)</option>
+                        )}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 이미지 URL 직접 입력 필드 */}
+                <div>
+                  <input
+                    type="text"
+                    placeholder="또는 이미지 URL 직접 입력 (https://... 또는 /product-...)"
+                    value={formData.imageUrl}
+                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-300 text-[11px] outline-none focus:border-emerald-500"
+                  />
+                </div>
               </div>
 
               <div>
