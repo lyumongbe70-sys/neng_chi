@@ -157,7 +157,7 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
               href="/admin"
               className="text-emerald-800 font-bold hover:underline"
             >
-              관리자 CMS
+              관리자 페이지
             </Link>
           </div>
         </div>

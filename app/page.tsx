@@ -213,7 +213,7 @@ export default function Home() {
               <a href="/about/greeting" className="hover:text-emerald-400">CEO 인사말</a>
               <a href="/about/location" className="hover:text-emerald-400">오시는 길</a>
               <a href="/board/notice" className="hover:text-emerald-400">공지사항</a>
-              <a href="/admin" className="text-emerald-500 font-bold hover:underline">관리자 CMS</a>
+              <a href="/admin" className="text-emerald-500 font-bold hover:underline">관리자 페이지</a>
             </div>
           </div>
 
