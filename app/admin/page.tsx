@@ -19,14 +19,34 @@ import {
   RefreshCw,
   ExternalLink,
 } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Product } from "@/types/product";
 import { PRODUCTS as INITIAL_MOCK_PRODUCTS } from "@/lib/data/mockProducts";
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab") as
+    | "overview"
+    | "products"
+    | "orders"
+    | "inventory"
+    | "tax"
+    | "members"
+    | null;
+
   const [activeTab, setActiveTab] = useState<
     "overview" | "products" | "orders" | "inventory" | "tax" | "members"
-  >("overview");
+  >(tabParam || "overview");
+
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    } else {
+      setActiveTab("overview");
+    }
+  }, [tabParam]);
 
   // 1. 상품 관리 상태
   const [products, setProducts] = useState<Product[]>(INITIAL_MOCK_PRODUCTS);

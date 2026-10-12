@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import AdminSidebarNav from "@/components/AdminSidebarNav";
 import {
   LayoutDashboard,
   Package,
@@ -25,50 +26,7 @@ export default function AdminLayout({
             <Logo variant="dark" href="/admin" />
           </div>
 
-          <nav className="space-y-1 text-xs font-semibold text-slate-400">
-            <Link
-              href="/admin"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-emerald-600/20 text-emerald-400 font-bold hover:bg-emerald-600/30 transition-colors"
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>대시보드 메인</span>
-            </Link>
-            <Link
-              href="/admin?tab=products"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/80 hover:text-white transition-colors"
-            >
-              <Package className="w-4 h-4" />
-              <span>상품 관리</span>
-            </Link>
-            <Link
-              href="/admin?tab=orders"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/80 hover:text-white transition-colors"
-            >
-              <Truck className="w-4 h-4" />
-              <span>주문 / 배송 관리</span>
-            </Link>
-            <Link
-              href="/admin?tab=inventory"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/80 hover:text-white transition-colors"
-            >
-              <Boxes className="w-4 h-4" />
-              <span>발주 / 재고 관리</span>
-            </Link>
-            <Link
-              href="/admin?tab=tax"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/80 hover:text-white transition-colors"
-            >
-              <Receipt className="w-4 h-4" />
-              <span>세무 / 증빙 관리</span>
-            </Link>
-            <Link
-              href="/admin?tab=members"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/80 hover:text-white transition-colors"
-            >
-              <Users className="w-4 h-4" />
-              <span>회원 / 적립금 관리</span>
-            </Link>
-          </nav>
+          <AdminSidebarNav />
         </div>
 
         <div className="pt-4 border-t border-slate-800 space-y-3">

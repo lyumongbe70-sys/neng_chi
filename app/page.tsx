@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
 import CartDrawer from "@/components/CartDrawer";
@@ -12,8 +12,9 @@ import OnePlusOneSection from "@/components/OnePlusOneSection";
 import TrustSummaryBanner from "@/components/TrustSummaryBanner";
 import FloatingConsultWidget from "@/components/FloatingConsultWidget";
 import ProductCard from "@/components/ProductCard";
-import { PRODUCTS, CATEGORIES } from "@/lib/data/mockProducts";
-import { CategorySlug } from "@/types/product";
+import { createClient } from "@/lib/supabase/client";
+import { PRODUCTS as DEFAULT_PRODUCTS, CATEGORIES } from "@/lib/data/mockProducts";
+import { Product, CategorySlug } from "@/types/product";
 import {
   ShieldCheck,
   Sparkles,
@@ -25,13 +26,42 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const [productList, setProductList] = useState<Product[]>(DEFAULT_PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<CategorySlug>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"popular" | "price-asc" | "price-desc">("popular");
 
+  // Supabase 또는 로컬 관리자 스토리지에서 상품 동기화
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase.from("products").select("*");
+        if (!error && data && data.length > 0) {
+          setProductList(data as Product[]);
+          return;
+        }
+      } catch (e) {
+        // Supabase 조회 실패 시 로컬 캐시 조회
+      }
+
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("vitalcare_admin_products");
+        if (saved) {
+          try {
+            setProductList(JSON.parse(saved));
+            return;
+          } catch (e) {}
+        }
+      }
+    };
+
+    loadProducts();
+  }, []);
+
   // 필터링 및 정렬 처리
   const filteredProducts = useMemo(() => {
-    let list = [...PRODUCTS];
+    let list = [...productList];
 
     if (selectedCategory !== "all") {
       list = list.filter((p) => p.categorySlug === selectedCategory);
@@ -43,12 +73,12 @@ export default function Home() {
         (p) =>
           p.name.toLowerCase().includes(q) ||
           p.category.toLowerCase().includes(q) ||
-          p.tags.some((tag) => tag.toLowerCase().includes(q))
+          (p.tags && p.tags.some((tag) => tag.toLowerCase().includes(q)))
       );
     }
 
     if (sortBy === "popular") {
-      list.sort((a, b) => b.reviewCount - a.reviewCount);
+      list.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
     } else if (sortBy === "price-asc") {
       list.sort((a, b) => a.price - b.price);
     } else if (sortBy === "price-desc") {
@@ -56,7 +86,7 @@ export default function Home() {
     }
 
     return list;
-  }, [selectedCategory, searchQuery, sortBy]);
+  }, [productList, selectedCategory, searchQuery, sortBy]);
 
   const getCategoryIcon = (slug: CategorySlug) => {
     switch (slug) {
