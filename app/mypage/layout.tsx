@@ -1,10 +1,14 @@
+"use client";
+
 import Header from "@/components/Header";
 import MobileTabBar from "@/components/MobileTabBar";
 import Link from "next/link";
+import { useAuthStore } from "@/lib/stores/useAuthStore";
 import {
   User,
   Package,
   Heart,
+  ShoppingBag,
   MessageSquare,
   Settings,
   Coins,
@@ -17,6 +21,10 @@ export default function MypageLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useAuthStore();
+  const displayName = user?.username || "고객";
+  const displayPoints = user?.points ?? 1000;
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
@@ -31,7 +39,7 @@ export default function MypageLayout({
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-black">홍길동 님</h1>
+                  <h1 className="text-xl sm:text-2xl font-black">{displayName} 님</h1>
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400 text-slate-900">
                     그린 VIP 회원
                   </span>
@@ -49,7 +57,9 @@ export default function MypageLayout({
                   <Coins className="w-3.5 h-3.5 text-amber-300" />
                   보유 적립금
                 </span>
-                <p className="text-lg font-black text-amber-300 mt-0.5">1,000 P</p>
+                <p className="text-lg font-black text-amber-300 mt-0.5">
+                  {displayPoints.toLocaleString()} P
+                </p>
               </div>
               <div>
                 <span className="text-xs text-emerald-200 flex items-center gap-1 font-medium">
@@ -84,6 +94,17 @@ export default function MypageLayout({
               <div className="flex items-center gap-2.5">
                 <Heart className="w-4 h-4 text-rose-500" />
                 <span>찜한 상품 (Wishlist)</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-300" />
+            </Link>
+
+            <Link
+              href="/cart"
+              className="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold text-xs sm:text-sm transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <ShoppingBag className="w-4 h-4 text-emerald-600" />
+                <span>장바구니 (Cart)</span>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-300" />
             </Link>

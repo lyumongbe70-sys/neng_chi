@@ -36,9 +36,31 @@ export default function Home() {
     const loadProducts = async () => {
       try {
         const supabase = createClient();
-        const { data, error } = await supabase.from("products").select("*");
+        const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
         if (!error && data && data.length > 0) {
-          setProductList(data as Product[]);
+          const mapped: Product[] = data.map((row: any) => ({
+            id: String(row.id),
+            name: row.name || "",
+            category: row.category || "기초활력·비타민",
+            categorySlug: row.categoryslug || row.categorySlug || "energy-vitamin",
+            brand: row.brand || "바이탈케어 랩스",
+            price: Number(row.price) || 0,
+            originalPrice: Number(row.originalprice ?? row.originalPrice ?? row.price ?? 0),
+            discountRate: Number(row.discountrate ?? row.discountRate ?? 0),
+            rating: Number(row.rating ?? 5.0),
+            reviewCount: Number(row.reviewcount ?? row.reviewCount ?? 0),
+            dosage: row.dosage || "1일 1회, 1정을 충분한 물과 함께 섭취",
+            volume: row.volume || "60정 (2개월분)",
+            certifications: ["식약처 기능성 인정", "GMP 제조시설"],
+            tags: ["건강기능식품", "식약처인증"],
+            badge: row.badge || undefined,
+            description: row.description || "",
+            features: ["엄선된 프리미엄 원료", "과학적 맞춤 배합"],
+            nutritionFacts: [],
+            stock: Number(row.stock ?? 100),
+            imageUrl: row.imageurl || row.imageUrl || "/product-doctor-ps.png",
+          }));
+          setProductList(mapped);
           return;
         }
       } catch (e) {
@@ -115,8 +137,6 @@ export default function Home() {
       {/* 2. 오늘 하루 보지 않기 팝업 모달 (24h localStorage) */}
       <TodayPopupModal />
 
-      {/* 3. 장바구니 슬라이드 드로어 */}
-      <CartDrawer />
 
       {/* 4. 메인 프로모션 슬라이더 배너 (1+1, 신규 1,000P) */}
       <MainSliderBanner />

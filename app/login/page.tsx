@@ -154,7 +154,28 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="pt-2 text-center text-xs text-slate-500 flex justify-center items-center gap-2 border-t border-slate-100">
+          {/* 관리자 빠른 로그인 프리셋 버튼 */}
+          <div className="pt-3 border-t border-slate-100 space-y-2">
+            <button
+              type="button"
+              onClick={() => {
+                login({
+                  id: "admin_super",
+                  username: "admin",
+                  email: "admin@vitalcare.co.kr",
+                  points: 999999,
+                  role: "ADMIN",
+                });
+                router.push("/admin");
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>최고 관리자 계정으로 바로 로그인 (admin)</span>
+            </button>
+          </div>
+
+          <div className="text-center text-xs text-slate-500 flex justify-center items-center gap-2">
             <span>아직 회원이 아니신가요?</span>
             <Link href="/signup" className="text-emerald-700 font-black hover:underline">
               회원가입하기

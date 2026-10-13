@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Grid, Heart, ShoppingBag, User } from "lucide-react";
@@ -10,9 +11,14 @@ export default function MobileTabBar() {
   const pathname = usePathname();
   const { toggleCart, getTotalCount } = useCartStore();
   const { getCount: getWishlistCount } = useWishlistStore();
+  const [isMounted, setIsMounted] = useState(false);
 
-  const cartCount = getTotalCount();
-  const wishlistCount = getWishlistCount();
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const cartCount = isMounted ? getTotalCount() : 0;
+  const wishlistCount = isMounted ? getWishlistCount() : 0;
 
   const isHome = pathname === "/";
   const isWishlist = pathname.startsWith("/mypage/wishlist");
@@ -60,10 +66,11 @@ export default function MobileTabBar() {
         </Link>
 
         {/* 장바구니 */}
-        <button
-          type="button"
-          onClick={toggleCart}
-          className="flex flex-col items-center py-1 text-slate-500 relative hover:text-emerald-600 transition-colors"
+        <Link
+          href="/cart"
+          className={`flex flex-col items-center py-1 relative transition-colors ${
+            pathname.startsWith("/cart") ? "text-emerald-600 font-bold" : "text-slate-500 hover:text-emerald-600"
+          }`}
         >
           <div className="relative">
             <ShoppingBag className="w-5 h-5" />
@@ -74,7 +81,7 @@ export default function MobileTabBar() {
             )}
           </div>
           <span className="text-[10px] mt-0.5">장바구니</span>
-        </button>
+        </Link>
 
         {/* 마이페이지 */}
         <Link

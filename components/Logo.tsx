@@ -32,7 +32,8 @@ export default function Logo({
           width={iconDimensions.width}
           height={iconDimensions.height}
           priority
-          className="object-contain drop-shadow-xs w-auto h-auto"
+          style={{ width: "auto", height: "auto" }}
+          className="object-contain drop-shadow-xs"
         />
       </div>
 

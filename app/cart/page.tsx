@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import MobileTabBar from "@/components/MobileTabBar";
@@ -15,7 +16,7 @@ import {
   ShieldCheck,
   ArrowRight,
   ChevronLeft,
-  Check,
+  Pill,
 } from "lucide-react";
 
 const FREE_SHIPPING_THRESHOLD = 50000;
@@ -24,7 +25,21 @@ const SHIPPING_FEE = 3000;
 export default function CartPage() {
   const router = useRouter();
   const { items, updateQuantity, removeItem, clearCart } = useCartStore();
-  const [selectedIds, setSelectedIds] = useState<string[]>(items.map((i) => i.id));
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // 카트 아이템이 변경되거나 스토어에서 로드될 때 선택 목록 동기화
+  useEffect(() => {
+    if (items.length > 0) {
+      setSelectedIds((prev) => {
+        const itemIds = items.map((i) => i.id);
+        if (prev.length === 0) return itemIds;
+        const valid = prev.filter((id) => itemIds.includes(id));
+        return valid.length === 0 ? itemIds : valid;
+      });
+    } else {
+      setSelectedIds([]);
+    }
+  }, [items]);
 
   const allSelected = items.length > 0 && selectedIds.length === items.length;
 
@@ -57,7 +72,7 @@ export default function CartPage() {
     (sum, i) => sum + i.price * i.quantity,
     0
   );
-  const discountAmount = totalOriginalPrice - totalSalePrice;
+  const discountAmount = Math.max(0, totalOriginalPrice - totalSalePrice);
   const isFreeShipping = totalSalePrice >= FREE_SHIPPING_THRESHOLD || selectedItems.length === 0;
   const shippingFee = selectedItems.length === 0 ? 0 : isFreeShipping ? 0 : SHIPPING_FEE;
   const finalAmount = totalSalePrice + shippingFee;
@@ -70,19 +85,20 @@ export default function CartPage() {
         <div className="mb-6 flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-600"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-600 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             쇼핑 계속하기
           </Link>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
+            <ShoppingBag className="w-6 h-6 text-emerald-600" />
             장바구니 ({items.length})
           </h1>
           <div />
         </div>
 
         {items.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center text-slate-400 space-y-4 max-w-lg mx-auto my-12">
+          <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center text-slate-400 space-y-4 max-w-lg mx-auto my-12 shadow-sm">
             <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto text-slate-300">
               <ShoppingBag className="w-8 h-8" />
             </div>
@@ -92,7 +108,7 @@ export default function CartPage() {
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-colors"
             >
               베스트 상품 보러가기
             </Link>
@@ -119,7 +135,7 @@ export default function CartPage() {
                   type="button"
                   onClick={handleRemoveSelected}
                   disabled={selectedIds.length === 0}
-                  className="text-slate-400 hover:text-rose-500 font-semibold disabled:opacity-40"
+                  className="text-slate-400 hover:text-rose-500 font-semibold disabled:opacity-40 transition-colors"
                 >
                   선택삭제
                 </button>
@@ -132,7 +148,7 @@ export default function CartPage() {
                   return (
                     <div
                       key={item.id}
-                      className="bg-white rounded-2xl p-5 border border-slate-200 space-y-4 shadow-2xs"
+                      className="bg-white rounded-2xl p-5 border border-slate-200 space-y-4 shadow-2xs hover:border-emerald-300 transition-colors"
                     >
                       <div className="flex items-start gap-3">
                         <input
@@ -142,24 +158,47 @@ export default function CartPage() {
                           className="w-4 h-4 rounded text-emerald-600 accent-emerald-600 mt-1 cursor-pointer shrink-0"
                         />
 
-                        <div className="flex-1">
+                        {/* 상품 썸네일 */}
+                        <Link
+                          href={`/products/${item.id}`}
+                          className="w-16 h-16 rounded-xl bg-slate-50 border border-slate-100 shrink-0 relative overflow-hidden flex items-center justify-center p-1"
+                        >
+                          {item.imageUrl ? (
+                            <Image
+                              src={item.imageUrl}
+                              alt={item.name}
+                              fill
+                              sizes="64px"
+                              className="object-contain p-1"
+                            />
+                          ) : (
+                            <Pill className="w-7 h-7 text-emerald-600" />
+                          )}
+                        </Link>
+
+                        <div className="flex-1 min-w-0">
                           {item.dosage && (
-                            <span className="text-[11px] font-semibold text-emerald-700 block mb-0.5">
+                            <span className="text-[11px] font-semibold text-emerald-700 block mb-0.5 truncate">
                               {item.dosage}
                             </span>
                           )}
                           <Link
                             href={`/products/${item.id}`}
-                            className="text-sm sm:text-base font-bold text-slate-900 hover:text-emerald-700 transition-colors leading-snug block"
+                            className="text-sm sm:text-base font-bold text-slate-900 hover:text-emerald-700 transition-colors leading-snug block line-clamp-2"
                           >
                             {item.name}
                           </Link>
+                          {item.volume && (
+                            <span className="text-xs text-slate-400 mt-0.5 block">
+                              {item.volume}
+                            </span>
+                          )}
                         </div>
 
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
-                          className="text-slate-400 hover:text-rose-500 p-1"
+                          className="text-slate-400 hover:text-rose-500 p-1 shrink-0 transition-colors"
                           title="삭제"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -172,7 +211,7 @@ export default function CartPage() {
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="p-1.5 hover:bg-slate-200 text-slate-600"
+                            className="p-1.5 hover:bg-slate-200 text-slate-600 transition-colors"
                             aria-label="수량 감소"
                           >
                             <Minus className="w-3.5 h-3.5" />
@@ -183,7 +222,7 @@ export default function CartPage() {
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="p-1.5 hover:bg-slate-200 text-slate-600"
+                            className="p-1.5 hover:bg-slate-200 text-slate-600 transition-colors"
                             aria-label="수량 증가"
                           >
                             <Plus className="w-3.5 h-3.5" />
@@ -235,8 +274,8 @@ export default function CartPage() {
                     </span>
                   </div>
 
-                  {!isFreeShipping && (
-                    <p className="text-[11px] text-emerald-700 bg-emerald-50 p-2 rounded-lg">
+                  {!isFreeShipping && selectedItems.length > 0 && (
+                    <p className="text-[11px] text-emerald-700 bg-emerald-50 p-2 rounded-lg font-medium">
                       💡 {(FREE_SHIPPING_THRESHOLD - totalSalePrice).toLocaleString()}원 더 담으면 무료배송!
                     </p>
                   )}
@@ -253,7 +292,7 @@ export default function CartPage() {
                   type="button"
                   disabled={selectedItems.length === 0}
                   onClick={() => router.push("/checkout")}
-                  className="w-full py-4 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition-all disabled:opacity-40"
+                  className="w-full py-4 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition-all disabled:opacity-40 cursor-pointer"
                 >
                   <span>총 {selectedItems.length}개 상품 주문하기</span>
                   <ArrowRight className="w-4 h-4" />

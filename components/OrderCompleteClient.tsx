@@ -1,18 +1,46 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Home, FileText } from "lucide-react";
+import { CheckCircle2, Home, FileText, Package, Truck } from "lucide-react";
 
 export default function OrderCompleteClient() {
   const params = useParams();
   const searchParams = useSearchParams();
 
   const orderNumber = (params?.id as string) || "ORD-DEMO";
-  const amount = Number(searchParams.get("amount") || "0");
-  const recipientName = searchParams.get("name") || "고객";
-  const recipientPhone = searchParams.get("phone") || "010-****-****";
-  const shippingAddress = searchParams.get("address") || "배송지 기본 정보";
+  const [orderDetails, setOrderDetails] = useState<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const userOrders = JSON.parse(localStorage.getItem("vitalcare_user_orders") || "[]");
+        const found = userOrders.find((o: any) => o.id === orderNumber || o.orderNumber === orderNumber);
+        if (found) {
+          setOrderDetails(found);
+        }
+      } catch (e) {}
+    }
+  }, [orderNumber]);
+
+  const amount = orderDetails
+    ? orderDetails.amount || orderDetails.finalAmount
+    : Number(searchParams.get("amount") || "0");
+
+  const recipientName = orderDetails
+    ? orderDetails.recipientName || orderDetails.customer
+    : searchParams.get("name") || "고객";
+
+  const recipientPhone = orderDetails
+    ? orderDetails.recipientPhone
+    : searchParams.get("phone") || "010-****-****";
+
+  const shippingAddress = orderDetails
+    ? orderDetails.shippingAddress
+    : searchParams.get("address") || "배송지 기본 정보";
+
+  const productName = orderDetails?.product || orderDetails?.productName;
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 w-full shadow-sm text-center space-y-6">
@@ -38,6 +66,12 @@ export default function OrderCompleteClient() {
           <span className="text-slate-500 font-medium">주문 번호</span>
           <span className="font-mono font-bold text-slate-900">{orderNumber}</span>
         </div>
+        {productName && (
+          <div className="flex justify-between pb-2 border-b border-slate-200">
+            <span className="text-slate-500 font-medium">주문 상품</span>
+            <span className="font-bold text-slate-900">{productName}</span>
+          </div>
+        )}
         <div className="flex justify-between">
           <span className="text-slate-500 font-medium">받는 분</span>
           <span className="font-bold text-slate-900">

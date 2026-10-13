@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Header from "@/components/Header";
 import MobileTabBar from "@/components/MobileTabBar";
 import BoardViewerClient from "@/components/BoardViewerClient";
@@ -21,7 +22,7 @@ interface BoardPageProps {
   }>;
 }
 
-export default async function BoardPage({ params }: BoardPageProps) {
+async function BoardContent({ params }: BoardPageProps) {
   const { type: rawType } = await params;
   const upperType = rawType.toUpperCase() as BoardType;
 
@@ -30,6 +31,10 @@ export default async function BoardPage({ params }: BoardPageProps) {
     notFound();
   }
 
+  return <BoardViewerClient type={upperType} />;
+}
+
+export default function BoardPage({ params }: BoardPageProps) {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
@@ -45,7 +50,9 @@ export default async function BoardPage({ params }: BoardPageProps) {
           </Link>
         </div>
 
-        <BoardViewerClient type={upperType} />
+        <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">게시판을 불러오는 중입니다...</div>}>
+          <BoardContent params={params} />
+        </Suspense>
       </main>
 
       <MobileTabBar />

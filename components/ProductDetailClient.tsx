@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -44,10 +44,24 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewContent, setReviewContent] = useState("");
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  const isFavorited = isWishlisted(product.id);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const isFavorited = isMounted ? isWishlisted(product.id) : false;
   const unitPrice = product.price;
   const totalPrice = unitPrice * quantity;
+
+  const handleToggleWishlist = () => {
+    toggleWishlist(product.id, {
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl,
+      category: product.category,
+    });
+  };
 
   // 갤러리 이미지 목록 (기본 3장)
   const galleryImages = [
@@ -97,6 +111,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       dosage: product.dosage,
       volume: product.volume,
       category: product.category,
+      imageUrl: product.imageUrl,
     });
     openCart();
   };
@@ -111,6 +126,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       dosage: product.dosage,
       volume: product.volume,
       category: product.category,
+      imageUrl: product.imageUrl,
     });
     router.push("/checkout");
   };
@@ -133,12 +149,22 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </span>
             )}
 
-            <div className="w-32 h-32 rounded-3xl bg-white shadow-lg flex items-center justify-center mb-4">
-              {galleryImages[selectedImageIdx].icon}
+            <div className="w-48 h-48 rounded-3xl bg-white shadow-lg flex items-center justify-center mb-4 relative overflow-hidden p-2">
+              {product.imageUrl && selectedImageIdx === 0 ? (
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                galleryImages[selectedImageIdx].icon
+              )}
             </div>
 
             <p className="text-sm font-bold text-slate-700">
-              {galleryImages[selectedImageIdx].label}
+              {selectedImageIdx === 0 && product.imageUrl
+                ? product.name
+                : galleryImages[selectedImageIdx].label}
             </p>
             <p className="text-xs text-slate-400 mt-1">{product.volume}</p>
           </div>
@@ -279,7 +305,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* 찜하기 버튼 */}
             <button
               type="button"
-              onClick={() => toggleWishlist(product.id)}
+              onClick={handleToggleWishlist}
               className={`p-3.5 rounded-xl border flex items-center justify-center transition-all ${
                 isFavorited
                   ? "bg-rose-50 border-rose-300 text-rose-500"
@@ -529,7 +555,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => toggleWishlist(product.id)}
+            onClick={handleToggleWishlist}
             className="p-2.5 rounded-xl border border-slate-200 text-slate-600"
           >
             <Heart className={`w-4 h-4 ${isFavorited ? "fill-current text-rose-500" : ""}`} />

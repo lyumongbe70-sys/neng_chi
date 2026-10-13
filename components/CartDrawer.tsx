@@ -1,8 +1,10 @@
 "use client";
 
 import { useCartStore } from "@/lib/stores/useCartStore";
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Truck } from "lucide-react";
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Truck, Pill } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const FREE_SHIPPING_THRESHOLD = 40000;
 const SHIPPING_FEE = 3000;
@@ -10,6 +12,8 @@ const SHIPPING_FEE = 3000;
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, getTotalPrice, getTotalCount } =
     useCartStore();
+
+  const router = useRouter();
 
   if (!isOpen) return null;
 
@@ -99,20 +103,36 @@ export default function CartDrawer() {
                   key={item.id}
                   className="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all space-y-3"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
+                  <div className="flex items-start gap-3">
+                    {/* 상품 썸네일 이미지 */}
+                    <div className="w-14 h-14 rounded-lg bg-slate-50 border border-slate-100 shrink-0 relative overflow-hidden flex items-center justify-center">
+                      {item.imageUrl ? (
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.name}
+                          fill
+                          sizes="56px"
+                          className="object-contain p-1"
+                        />
+                      ) : (
+                        <Pill className="w-6 h-6 text-emerald-500" />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
                       {item.dosage && (
-                        <span className="text-[11px] font-medium text-emerald-600 block mb-0.5">
+                        <span className="text-[11px] font-medium text-emerald-600 block mb-0.5 truncate">
                           {item.dosage}
                         </span>
                       )}
-                      <h3 className="text-sm font-bold text-slate-900 leading-snug">
+                      <h3 className="text-sm font-bold text-slate-900 leading-snug line-clamp-2">
                         {item.name}
                       </h3>
                     </div>
+
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="text-slate-400 hover:text-rose-500 p-1 transition-colors"
+                      className="text-slate-400 hover:text-rose-500 p-1 transition-colors shrink-0"
                       title="삭제"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -153,7 +173,7 @@ export default function CartDrawer() {
             )}
           </div>
 
-          {/* 결제 요약 및 주문하기 버튼 */}
+          {/* 결제 요약 및 주문 / 장바구니 이동 버튼 */}
           {items.length > 0 && (
             <div className="p-6 border-t border-slate-200 bg-slate-50 space-y-3">
               <div className="space-y-1.5 text-xs text-slate-600">
@@ -173,13 +193,26 @@ export default function CartDrawer() {
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={() => {
-                    alert("주문 페이지로 이동합니다 (프로토타입 데모).");
+                    closeCart();
+                    router.push("/cart");
                   }}
-                  className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"
+                  className="w-full py-3 px-4 rounded-xl border border-emerald-600 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <ShoppingBag className="w-4 h-4 text-emerald-700" />
+                  <span>장바구니 전체보기</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeCart();
+                    router.push("/checkout");
+                  }}
+                  className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5 cursor-pointer"
                 >
                   <span>{finalPrice.toLocaleString()}원 주문하기</span>
                   <ArrowRight className="w-4 h-4" />

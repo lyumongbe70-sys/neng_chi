@@ -105,6 +105,7 @@ export default function OnePlusOneSection() {
                     src={prod.imageUrl}
                     alt={prod.name}
                     fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                   />
                   {/* 좌측 상단 특별가격 톱니바퀴형 배지 */}

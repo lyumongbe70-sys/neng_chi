@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import CartDrawer from "@/components/CartDrawer";
 
 export const metadata: Metadata = {
   title: "바이탈케어 (VitalCare) | 프리미엄 건강기능식품 전문몰",
@@ -29,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full">
+    <html lang="ko" className="h-full" data-scroll-behavior="smooth">
       <head>
         <link
           rel="stylesheet"
@@ -40,6 +41,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-emerald-100 selection:text-emerald-900">
         {children}
+        <CartDrawer />
       </body>
     </html>
   );

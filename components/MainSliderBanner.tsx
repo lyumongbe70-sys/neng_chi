@@ -193,6 +193,7 @@ export default function MainSliderBanner() {
                         src={slide.image}
                         alt={slide.imageAlt || slide.title}
                         fill
+                        sizes="(max-width: 768px) 256px, 384px"
                         priority={idx === 0}
                         className="object-cover object-center drop-shadow-2xl"
                       />

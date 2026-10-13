@@ -48,11 +48,16 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  const cartCount = getTotalCount();
-  const wishlistCount = getWishlistCount();
+  const cartCount = isMounted ? getTotalCount() : 0;
+  const wishlistCount = isMounted ? getWishlistCount() : 0;
   const { user, logout } = useAuthStore();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -114,7 +119,7 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
           </div>
 
           <div className="flex items-center gap-3.5">
-            {user ? (
+            {isMounted && user ? (
               <>
                 <div className="flex items-center gap-1.5 font-bold text-slate-800">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -145,7 +150,7 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
               </>
             )}
             <span className="text-slate-300">|</span>
-            <Link href="/board/notice" className="hover:text-emerald-700 transition-colors">
+            <Link href="/customer" className="hover:text-emerald-700 transition-colors font-medium">
               고객센터
             </Link>
             <span className="text-slate-300">|</span>
@@ -278,11 +283,10 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
             </Link>
 
             {/* 장바구니 */}
-            <button
-              type="button"
-              onClick={toggleCart}
+            <Link
+              href="/cart"
               className="flex flex-col items-center justify-center p-2 text-slate-700 hover:text-emerald-600 transition-colors relative group"
-              aria-label="장바구니 열기"
+              aria-label="장바구니 페이지로 이동"
             >
               <div className="relative">
                 <ShoppingBag className="w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -295,7 +299,7 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
               <span className="text-[10px] font-semibold text-slate-500 group-hover:text-emerald-600 hidden sm:block mt-0.5">
                 장바구니
               </span>
-            </button>
+            </Link>
 
             {/* 마이페이지 */}
             <Link
@@ -453,11 +457,26 @@ export default function Header({ searchQuery: controlledQuery, onSearchChange }:
 
               {/* 고객센터 (드롭다운) */}
               <div className="relative group">
-                <button className="flex items-center gap-1 px-5 py-3.5 hover:bg-emerald-700/60 transition-colors">
+                <Link
+                  href="/customer"
+                  className="flex items-center gap-1 px-5 py-3.5 hover:bg-emerald-700/60 transition-colors"
+                >
                   <span>고객센터</span>
                   <ChevronDown className="w-3.5 h-3.5 text-emerald-300" />
-                </button>
+                </Link>
                 <div className="absolute top-full left-0 w-44 bg-white text-slate-800 shadow-xl rounded-b-xl border border-slate-200 py-2 hidden group-hover:block z-50">
+                  <Link
+                    href="/customer"
+                    className="block px-4 py-2 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-semibold"
+                  >
+                    고객센터 홈 (FAQ)
+                  </Link>
+                  <Link
+                    href="/customer?tab=qna"
+                    className="block px-4 py-2 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-semibold"
+                  >
+                    질문과 답변 (Q&A)
+                  </Link>
                   <Link
                     href="/board/notice"
                     className="block px-4 py-2 hover:bg-emerald-50 hover:text-emerald-700 text-xs font-semibold"
