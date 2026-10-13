@@ -126,7 +126,7 @@ export default function MypageLayout({
             >
               <div className="flex items-center gap-2.5">
                 <Settings className="w-4 h-4 text-slate-500" />
-                <span>회원정보 / 배송지 관리</span>
+                <span>회원정보 / 탈퇴 관리</span>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-300" />
             </Link>
